@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.Array;
 public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private Texture snakeHead;
-    private Apple apple = new Apple();
+    private Apple apple;
     private static final float MOVE_TIME = 1F;
     private float timer = MOVE_TIME;
     private static final int SNAKE_MOVEMENT = 32;
@@ -28,7 +28,7 @@ public class GameScreen extends ScreenAdapter {
     public void show() {
         batch = new SpriteBatch();
         snakeHead = new Texture(Gdx.files.internal("snakehead.png"));
-        apple = new Apple();
+        apple = new Apple(new Texture(Gdx.files.internal("apple.png")));
     }
 
     @Override
@@ -63,7 +63,9 @@ public class GameScreen extends ScreenAdapter {
         batch.draw(snakeHead, snakeX, snakeY);
 
         for (SnakeBodyPart bodyPart : snakeBody) {
-            bodyPart.drawOnScreen(batch);
+            if (!(bodyPart.getX() == snakeX && bodyPart.getY() == snakeY)){
+                bodyPart.drawOnScreen(batch);
+            }
         }
 
         if (apple.isAvailable()) {
@@ -147,7 +149,7 @@ public class GameScreen extends ScreenAdapter {
         boolean condition3 = snakeY == apple.getY();
         boolean isCollision = condition1 && condition2 && condition3;
         if (isCollision) {
-            SnakeBodyPart bodyPart = new SnakeBodyPart();
+            SnakeBodyPart bodyPart = new SnakeBodyPart(new Texture(Gdx.files.internal("snakebody.png")));
             bodyPart.updatePosition(snakeX, snakeY);
             snakeBody.insert(0, bodyPart);
             apple.setAvailable(false);
