@@ -8,27 +8,25 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
 
 
 public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
-    private Texture snakeHead;
+    private Texture appleTexture;
     private Apple apple;
+    private Snake snake;
     private static final float MOVE_TIME = 1F;
     private float timer = MOVE_TIME;
-    private static final int SNAKE_MOVEMENT = 32;
-    static int snakeX = 0, snakeY = 0;
-    private int snakeDirection = Direction.RIGHT;
-    private Array<SnakeBodyPart> snakeBody = new Array<>();
 
-    private int snakeXBeforeUpdate = 0, snakeYBeforeUpdate = 0;
+
 
     @Override
     public void show() {
         batch = new SpriteBatch();
-        snakeHead = new Texture(Gdx.files.internal("snakehead.png"));
-        apple = new Apple(new Texture(Gdx.files.internal("apple.png")));
+        appleTexture = new Texture(Gdx.files.internal("apple.png"));
+
+        apple = new Apple(appleTexture);
+        snake = new Snake();
     }
 
     @Override
@@ -60,13 +58,7 @@ public class GameScreen extends ScreenAdapter {
     private void drawOnScreen() {
         batch.begin();
 
-        batch.draw(snakeHead, snakeX, snakeY);
-
-        for (SnakeBodyPart bodyPart : snakeBody) {
-            if (!(bodyPart.getX() == snakeX && bodyPart.getY() == snakeY)){
-                bodyPart.drawOnScreen(batch);
-            }
-        }
+        snake.drawFullSnake(batch);
 
         if (apple.isAvailable()) {
             apple.drawOnScreen(batch);
@@ -78,37 +70,22 @@ public class GameScreen extends ScreenAdapter {
 
 
     private void checkIfOutOfBounds() {
-        if (snakeX >= Gdx.graphics.getWidth()) {
-            snakeX = 0;
+        if (snake.getHead().getX() >= Gdx.graphics.getWidth()) {
+            snake.getHead().setX(0);
         }
-        if (snakeX < 0) {
-            snakeX = Gdx.graphics.getWidth() - SNAKE_MOVEMENT;
+        if (snake.getHead().getX() < 0) {
+            snake.getHead().setX(Gdx.graphics.getWidth() - snake.getMOVEMENT());
         }
-        if (snakeY >= Gdx.graphics.getHeight()) {
-            snakeY = 0;
+        if (snake.getHead().getY() >= Gdx.graphics.getHeight()) {
+            snake.getHead().setY(0);
         }
-        if (snakeY < 0) {
-            snakeY = Gdx.graphics.getHeight() - SNAKE_MOVEMENT;
+        if (snake.getHead().getY() < 0) {
+            snake.getHead().setY(Gdx.graphics.getHeight() - snake.getMOVEMENT());
         }
     }
 
     private void moveSnake() {
-        snakeXBeforeUpdate = snakeX;
-        snakeYBeforeUpdate = snakeY;
-        switch (snakeDirection) {
-            case Direction.RIGHT:
-                snakeX += SNAKE_MOVEMENT;
-                break;
-            case Direction.LEFT:
-                snakeX -= SNAKE_MOVEMENT;
-                break;
-            case Direction.UP:
-                snakeY += SNAKE_MOVEMENT;
-                break;
-            case Direction.DOWN:
-                snakeY -= SNAKE_MOVEMENT;
-                break;
-        }
+        snake.move();
     }
 
     private void queryKeyboardInput(){
@@ -118,50 +95,44 @@ public class GameScreen extends ScreenAdapter {
         boolean downPressed = Gdx.input.isKeyPressed(Input.Keys.DOWN);
 
         if (leftPressed) {
-            snakeDirection = Direction.LEFT;
+            snake.setDirection(Direction.LEFT);
         }
         if (rightPressed) {
-            snakeDirection = Direction.RIGHT;
+            snake.setDirection(Direction.RIGHT);
         }
         if (upPressed) {
-            snakeDirection = Direction.UP;
+            snake.setDirection(Direction.UP);
         }
         if (downPressed) {
-            snakeDirection = Direction.DOWN;
+            snake.setDirection(Direction.DOWN);
         }
-
     }
 
     private void checkAndPlaceApple() {
         if (!apple.isAvailable()) {
             do {
+                int SNAKE_MOVEMENT = snake.getMOVEMENT();
                 int appleX = MathUtils.random(0, (Gdx.graphics.getWidth() - SNAKE_MOVEMENT) / SNAKE_MOVEMENT) * SNAKE_MOVEMENT;
                 int appleY = MathUtils.random(0, (Gdx.graphics.getHeight() - SNAKE_MOVEMENT) / SNAKE_MOVEMENT) * SNAKE_MOVEMENT;
                 apple.updatePosition(appleX, appleY);
-            } while (apple.getX() == snakeX && apple.getY() == snakeY);
+            } while (apple.getX() == snake.getHead().getX() && apple.getY() == snake.getHead().getY());
             apple.setAvailable(true);
         }
     }
 
     private void checkAppleCollision() {
         boolean condition1 = apple.isAvailable();
-        boolean condition2 = snakeX == apple.getX();
-        boolean condition3 = snakeY == apple.getY();
+        boolean condition2 = snake.getHead().getX() == apple.getX();
+        boolean condition3 = snake.getHead().getY() == apple.getY();
         boolean isCollision = condition1 && condition2 && condition3;
         if (isCollision) {
-            SnakeBodyPart bodyPart = new SnakeBodyPart(new Texture(Gdx.files.internal("snakebody.png")));
-            bodyPart.updatePosition(snakeX, snakeY);
-            snakeBody.insert(0, bodyPart);
+            snake.addBodyPart();
             apple.setAvailable(false);
         }
     }
 
     private void updateBodyPartsPosition() {
-        if (snakeBody.size > 0) {
-            SnakeBodyPart bodyPart = snakeBody.removeIndex(0);
-            bodyPart.updatePosition(snakeXBeforeUpdate, snakeYBeforeUpdate);
-            snakeBody.add(bodyPart);
-        }
+        snake.updateBodyPartsPosition();
     }
 
 }

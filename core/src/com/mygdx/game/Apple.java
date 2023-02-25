@@ -10,7 +10,6 @@ public class Apple extends CustomSprite {
         super(texture);
     }
 
-
     public boolean isAvailable() {
         return isAvailable;
     }
