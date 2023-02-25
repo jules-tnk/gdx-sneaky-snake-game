@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 
 public class Apple {
     private int x, y;
+    private boolean isAvailable = false;
     private static final Texture texture = new Texture(Gdx.files.internal("apple.png"));
 
     public Apple() {}
@@ -25,5 +26,13 @@ public class Apple {
 
     public int getY() {
         return y;
+    }
+
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
     }
 }

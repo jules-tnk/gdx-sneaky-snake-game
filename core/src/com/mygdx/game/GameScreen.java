@@ -14,9 +14,7 @@ import com.badlogic.gdx.utils.Array;
 public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private Texture snakeHead;
-    private boolean isAppleAvailable = false;
     private Apple apple = new Apple();
-    //private static int appleX = 0, appleY = 0;
     private static final float MOVE_TIME = 1F;
     private float timer = MOVE_TIME;
     private static final int SNAKE_MOVEMENT = 32;
@@ -68,7 +66,7 @@ public class GameScreen extends ScreenAdapter {
             bodyPart.drawOnScreen(batch);
         }
 
-        if (isAppleAvailable) {
+        if (apple.isAvailable()) {
             apple.drawOnScreen(batch);
         }
 
@@ -133,18 +131,18 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void checkAndPlaceApple() {
-        if (!isAppleAvailable) {
+        if (!apple.isAvailable()) {
             do {
                 int appleX = MathUtils.random(0, (Gdx.graphics.getWidth() - SNAKE_MOVEMENT) / SNAKE_MOVEMENT) * SNAKE_MOVEMENT;
                 int appleY = MathUtils.random(0, (Gdx.graphics.getHeight() - SNAKE_MOVEMENT) / SNAKE_MOVEMENT) * SNAKE_MOVEMENT;
                 apple.updatePosition(appleX, appleY);
             } while (apple.getX() == snakeX && apple.getY() == snakeY);
-            isAppleAvailable = true;
+            apple.setAvailable(true);
         }
     }
 
     private void checkAppleCollision() {
-        boolean condition1 = isAppleAvailable;
+        boolean condition1 = apple.isAvailable();
         boolean condition2 = snakeX == apple.getX();
         boolean condition3 = snakeY == apple.getY();
         boolean isCollision = condition1 && condition2 && condition3;
@@ -152,7 +150,7 @@ public class GameScreen extends ScreenAdapter {
             SnakeBodyPart bodyPart = new SnakeBodyPart();
             bodyPart.updatePosition(snakeX, snakeY);
             snakeBody.insert(0, bodyPart);
-            isAppleAvailable = false;
+            apple.setAvailable(false);
         }
     }
 
